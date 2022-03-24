@@ -2,14 +2,14 @@ name: Create namespace
 description: "Create namespace with image pull secret on given cluster"
 
 inputs:
-  commonRepoAccessToken:
-    description: Common repository access token
+  # commonRepoAccessToken:
+  #   description: Common repository access token
+  #   required: true
+  namespace:
+    description: Target namespace
     required: true
   kubeConfig:
     description: Target cluster kubeconfig
-    required: true
-  namespace:
-    description: Target namespace
     required: true
   containerRegistryHost:
     description: Container registry hostname
@@ -25,11 +25,6 @@ runs:
   using: "composite"
 
   steps:
-    - uses: edgeclusters/common-tasks@v1
-      id: common
-      with:
-        accessToken: ${{ github.event.inputs.commonRepoAccessToken }}
-
     - name: Create default kubeconfig
       shell: bash
       run: |
