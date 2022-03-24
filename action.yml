@@ -2,9 +2,6 @@ name: Create namespace
 description: "Create namespace with image pull secret on given cluster"
 
 inputs:
-  # commonRepoAccessToken:
-  #   description: Common repository access token
-  #   required: true
   namespace:
     description: Target namespace
     required: true
