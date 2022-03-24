@@ -1,0 +1,63 @@
+name: Create namespace
+description: "Create namespace with image pull secret on given cluster"
+
+inputs:
+  commonRepoAccessToken:
+    description: Common repository access token
+    required: true
+  kubeConfig:
+    description: Target cluster kubeconfig
+    required: true
+  namespace:
+    description: Target namespace
+    required: true
+  containerRegistryHost:
+    description: Container registry hostname
+    required: true
+  containerRegistryUser:
+    description: Container registry username
+    required: true
+  containerRegistryPassword:
+    description: Container registry password/token
+    required: true
+
+runs:
+  using: "composite"
+
+  steps:
+    - uses: edgeclusters/common-tasks@v1
+      id: common
+      with:
+        accessToken: ${{ github.event.inputs.commonRepoAccessToken }}
+
+    - name: Create default kubeconfig
+      shell: bash
+      run: |
+        mkdir $HOME/.kube
+        echo "${{ github.event.inputs.kubeConfig }}" | base64 -d > $HOME/.kube/config
+        chmod 700 $HOME/.kube
+        chmod 600 $HOME/.kube/config
+
+    - name: Create namespace
+      shell: bash
+      run: |
+        kubectl create namespace ${{ github.event.inputs.namespace }} \
+        --dry-run=client \
+        --save-config \
+        --output yaml \
+        | kubectl apply \
+        -f -
+
+    - name: Create container registry secret
+      shell: bash
+      run: |
+        kubectl create secret docker-registry ${{ github.event.inputs.secretName }} \
+        --namespace=${{ github.event.inputs.namespace }} \
+        --docker-server=${{ github.event.inputs.containerRegistryHost }} \
+        --docker-username=${{ github.event.inputs.containerRegistryUser }} \
+        --docker-password=${{ github.event.inputs.containerRegistryPassword }} \
+        --save-config \
+        --dry-run=client \
+        --output=yaml | \
+        kubectl apply \
+        -f -
